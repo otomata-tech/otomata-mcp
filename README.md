@@ -14,7 +14,7 @@ socle ne requête jamais sans scope → pas de fuite cross-org.
 otomata_mcp/
   scope.py        # Scope + ScopeResolver (ConstantScope = Z1, CallableScope = ZN)
   identity.py     # current_identity() via resolver injecté (JWT en prod)
-  content/        # doctrines en base, servies EN TOOLS (list / open / set / get_doctrine)
+  content/        # instructions en base, servies EN TOOLS (readme_agent / list_instructions / get_instruction / set_instruction)
                   #   model · store (Protocol + InMemory) · validate (zéro nom) · schema (DDL) · tools
   run/            # start/stop : pile de runs en session state, corrélée run_id
   rbac/           # org_admin → group_admin → member, scopé (gate des tools)

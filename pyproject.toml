@@ -1,6 +1,6 @@
 [project]
 name = "otomata-mcp"
-version = "0.1.2"
+version = "0.2.0"
 description = "Socle commun des serveurs MCP Otomata : doctrines en base servies en tools, runs start/stop, RBAC scopé, logging. Tout-en-tools, scope injecté (intra-entreprise ; le × Z reste à l'orchestrateur)."
 readme = "README.md"
 requires-python = ">=3.10"

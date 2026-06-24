@@ -39,19 +39,21 @@ async def _scenario():
         who["sub"] = "bob"
         started = await client.call_tool("run_start", {"label": "consult"})
         run_id = started.data["run_id"]
-        await client.call_tool("doctrine_open", {"kind": "knowledge", "slug": "strategie"})
+        readme = await client.call_tool("readme_agent", {})
+        assert readme.data["instructions"], "readme_agent doit renvoyer l'index"
+        await client.call_tool("get_instruction", {"kind": "knowledge", "slug": "strategie"})
         bob_set_refused = False
         try:
-            await client.call_tool("doctrine_set", {"kind": "knowledge", "slug": "x", "body": "y"})
+            await client.call_tool("set_instruction", {"kind": "knowledge", "slug": "x", "body": "y"})
         except Exception:
             bob_set_refused = True
         await client.call_tool("run_finish", {"run_id": run_id, "outcome": "done"})
 
         who["sub"] = "alice"
-        await client.call_tool("doctrine_set", {"kind": "rule", "slug": "seuils", "body": "Prix unitaire."})
+        await client.call_tool("set_instruction", {"kind": "rule", "slug": "seuils", "body": "Prix unitaire."})
         name_refused = False
         try:
-            await client.call_tool("doctrine_set", {"kind": "rule", "slug": "bad", "body": "« x » — Antonini"})
+            await client.call_tool("set_instruction", {"kind": "rule", "slug": "bad", "body": "« x » — Antonini"})
         except Exception:
             name_refused = True
     return log, run_id, bob_set_refused, name_refused
@@ -60,10 +62,10 @@ async def _scenario():
 def test_socle():
     log, run_id, bob_set_refused, name_refused = asyncio.run(_scenario())
 
-    opened = [r for r in log if r["tool"] == "doctrine_open"]
-    assert opened, "doctrine_open absent du journal"
-    assert opened[0]["run_id"] == run_id, "run_id non corrélé sur doctrine_open"
+    opened = [r for r in log if r["tool"] == "get_instruction"]
+    assert opened, "get_instruction absent du journal"
+    assert opened[0]["run_id"] == run_id, "run_id non corrélé sur get_instruction"
 
     assert bob_set_refused, "un member a pu écrire (RBAC cassé)"
     assert name_refused, "un verbatim nominatif a été accepté (validation cassée)"
-    assert any(r["tool"] == "doctrine_set" and r["ok"] for r in log), "aucune écriture org_admin réussie"
+    assert any(r["tool"] == "set_instruction" and r["ok"] for r in log), "aucune écriture org_admin réussie"

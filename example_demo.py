@@ -54,11 +54,12 @@ async def main():
         as_("bob")
         started = await client.call_tool("run_start", {"label": "consult", "doctrine": "strategie"})
         run_id = started.data["run_id"]
-        await client.call_tool("doctrine_list", {})
-        await client.call_tool("doctrine_open", {"kind": "knowledge", "slug": "strategie"})
+        await client.call_tool("readme_agent", {})
+        await client.call_tool("list_instructions", {})
+        await client.call_tool("get_instruction", {"kind": "knowledge", "slug": "strategie"})
         # bob tente d'écrire → refus RBAC
         try:
-            await client.call_tool("doctrine_set", {"kind": "knowledge", "slug": "x", "body": "..."})
+            await client.call_tool("set_instruction", {"kind": "knowledge", "slug": "x", "body": "..."})
             print("✗ BUG : écriture par un member acceptée")
         except Exception as e:
             print("✓ refus RBAC (member) :", str(e).splitlines()[-1][:90])
@@ -66,12 +67,12 @@ async def main():
 
         # alice (org_admin) : écrit OK
         as_("alice")
-        await client.call_tool("doctrine_set", {"kind": "rule", "slug": "seuils",
-                                                "body": "Prix unitaire, pas prix au m²."})
+        await client.call_tool("set_instruction", {"kind": "rule", "slug": "seuils",
+                                                   "body": "Prix unitaire, pas prix au m²."})
         # alice tente un contenu avec un nom → refus validation
         try:
-            await client.call_tool("doctrine_set", {"kind": "rule", "slug": "bad",
-                                                    "body": '« On crève sinon » — Antonini'})
+            await client.call_tool("set_instruction", {"kind": "rule", "slug": "bad",
+                                                       "body": '« On crève sinon » — Antonini'})
             print("✗ BUG : verbatim nominatif accepté")
         except Exception as e:
             print("✓ refus validation (nom) :", str(e).splitlines()[-1][:90])

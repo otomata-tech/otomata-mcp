@@ -6,12 +6,14 @@ Tout-en-tools. Le multi-entreprise (× Z) reste dans l'orchestrateur.
 from .bootstrap import build_server
 from .content import ContentDoc, ContentStore, InMemoryContentStore, SCHEMA_SQL, validate
 from .identity import Identity, current_identity, current_sub, set_resolver
+from .instructions import SERVER_INSTRUCTIONS
 from .logging import AccessLogger
 from .rbac import GROUP_ADMIN, MEMBER, ORG_ADMIN, InMemoryRoleStore, Rbac, RoleStore
 from .scope import CallableScope, ConstantScope, Scope, ScopeResolver
 
 __all__ = [
     "build_server",
+    "SERVER_INSTRUCTIONS",
     "ContentDoc",
     "ContentStore",
     "InMemoryContentStore",
