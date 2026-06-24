@@ -11,6 +11,7 @@ from fastmcp import FastMCP
 
 from .content.store import ContentStore
 from .content.tools import register_content_tools
+from .feedback import FeedbackSink, register_feedback_tools
 from .instructions import SERVER_INSTRUCTIONS
 from .logging import AccessLogger
 from .rbac.gate import Rbac
@@ -31,6 +32,7 @@ def build_server(
     readme: Optional[Readme] = None,
     instructions: Optional[str] = None,
     blocklist: Sequence[str] = (),
+    feedback_sink: Optional[FeedbackSink] = None,
     auth=None,
 ) -> FastMCP:
     # La porte d'entrée : instructions métier (optionnelles) + la convention du socle.
@@ -40,4 +42,6 @@ def build_server(
     mcp.add_middleware(AccessLogger(sink, server=name))
     register_content_tools(mcp, content_store, scope_resolver, rbac, readme=readme, blocklist=blocklist)
     register_run_tools(mcp)
+    if feedback_sink is not None:
+        register_feedback_tools(mcp, feedback_sink, server=name)
     return mcp

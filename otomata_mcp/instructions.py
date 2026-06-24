@@ -9,4 +9,5 @@ Ce serveur expose son savoir-faire EN TOOLS (pas de resource ni de prompt) — d
 2. Charge une instruction au besoin : `list_instructions(kind?)` pour l'index, puis `get_instruction(kind, slug)` pour le corps.
 3. Encadre toute procédure : `run_start(label, doctrine?)` … `run_finish(run_id, outcome)` — les appels intermédiaires sont corrélés (run_id) et journalisés.
 4. Écrire une instruction (`set_instruction`) est réservé aux admins et REFUSÉ si le contenu cite un nom de personne/client.
+5. Remonte tout signal d'usage via `feedback(signal, kind, target, text?)` — `signal='gap'` quand un besoin n'est PAS couvert (outil/doctrine/donnée manquant), `signal='tool_feedback'` quand un outil se comporte mal/bien. Préfère remonter un signal plutôt qu'abandonner en silence : c'est ainsi que la plateforme apprend.
 """

@@ -5,6 +5,7 @@ Tout-en-tools. Le multi-entreprise (× Z) reste dans l'orchestrateur.
 """
 from .bootstrap import build_server
 from .content import ContentDoc, ContentStore, InMemoryContentStore, SCHEMA_SQL, validate
+from .feedback import FEEDBACK_SCHEMA_SQL, SIGNALS, register_feedback_tools
 from .identity import Identity, current_identity, current_sub, set_resolver
 from .instructions import SERVER_INSTRUCTIONS
 from .logging import AccessLogger
@@ -14,6 +15,9 @@ from .scope import CallableScope, ConstantScope, Scope, ScopeResolver
 __all__ = [
     "build_server",
     "SERVER_INSTRUCTIONS",
+    "register_feedback_tools",
+    "FEEDBACK_SCHEMA_SQL",
+    "SIGNALS",
     "ContentDoc",
     "ContentStore",
     "InMemoryContentStore",

@@ -20,6 +20,7 @@ logging.getLogger("FastMCP").setLevel(logging.CRITICAL)
 
 def _build():
     log: list[dict] = []
+    fb: list[dict] = []
     who = {"sub": None}
     set_resolver(lambda: Identity(who["sub"]) if who["sub"] else None)
 
@@ -29,12 +30,12 @@ def _build():
     roles = InMemoryRoleStore({("acme", "alice"): ORG_ADMIN, ("acme", "bob"): MEMBER})
     mcp = build_server("test", content_store=content, role_store=roles,
                        scope_resolver=ConstantScope("acme"), sink=log.append,
-                       blocklist=["Antonini"])
-    return mcp, log, who
+                       feedback_sink=fb.append, blocklist=["Antonini"])
+    return mcp, log, who, fb
 
 
 async def _scenario():
-    mcp, log, who = _build()
+    mcp, log, who, fb = _build()
     async with Client(mcp) as client:
         who["sub"] = "bob"
         started = await client.call_tool("run_start", {"label": "consult"})
@@ -42,6 +43,8 @@ async def _scenario():
         readme = await client.call_tool("readme_agent", {})
         assert readme.data["instructions"], "readme_agent doit renvoyer l'index"
         await client.call_tool("get_instruction", {"kind": "knowledge", "slug": "strategie"})
+        await client.call_tool("feedback", {"signal": "gap", "kind": "missing_data",
+                                            "target": "comparables au m² par étage"})
         bob_set_refused = False
         try:
             await client.call_tool("set_instruction", {"kind": "knowledge", "slug": "x", "body": "y"})
@@ -56,11 +59,11 @@ async def _scenario():
             await client.call_tool("set_instruction", {"kind": "rule", "slug": "bad", "body": "« x » — Antonini"})
         except Exception:
             name_refused = True
-    return log, run_id, bob_set_refused, name_refused
+    return log, run_id, bob_set_refused, name_refused, fb
 
 
 def test_socle():
-    log, run_id, bob_set_refused, name_refused = asyncio.run(_scenario())
+    log, run_id, bob_set_refused, name_refused, fb = asyncio.run(_scenario())
 
     opened = [r for r in log if r["tool"] == "get_instruction"]
     assert opened, "get_instruction absent du journal"
@@ -69,3 +72,6 @@ def test_socle():
     assert bob_set_refused, "un member a pu écrire (RBAC cassé)"
     assert name_refused, "un verbatim nominatif a été accepté (validation cassée)"
     assert any(r["tool"] == "set_instruction" and r["ok"] for r in log), "aucune écriture org_admin réussie"
+
+    assert len(fb) == 1 and fb[0]["signal"] == "gap", "feedback non capté"
+    assert fb[0]["run_id"] == run_id, "feedback non corrélé au run"
