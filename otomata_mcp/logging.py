@@ -3,11 +3,16 @@
 Réf oto `server.py:199-225` : c'est ce middleware (et non `otomata-calllog` brut) qui
 stampe `run_id`. Il réutilise le MÊME schéma/sink que calllog (`server, sub, email, tool,
 args, ok, error, duration_ms` + `run_id`). Comme tout est un tool, TOUT accès est loggé.
+
+Le sink peut être SYNC (ex. sqlite) ou ASYNC (ex. PostgREST httpx) : une coroutine est
+programmée en fire-and-forget avec une référence forte (anti-GC asyncio).
 """
 from __future__ import annotations
 
+import asyncio
+import inspect
 import time
-from typing import Any, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional, Union
 
 from fastmcp.server.middleware import Middleware
 
@@ -15,6 +20,10 @@ from .identity import current_identity
 from .run import stack as run_stack
 
 MAX_ARG_CHARS = 300
+
+Sink = Callable[[dict], Union[None, Awaitable[None]]]
+
+_PENDING: set = set()
 
 
 def _truncated_args(arguments: Optional[dict]) -> Optional[dict]:
@@ -31,9 +40,20 @@ def _truncated_args(arguments: Optional[dict]) -> Optional[dict]:
 
 
 class AccessLogger(Middleware):
-    def __init__(self, sink: Callable[[dict], None], server: str) -> None:
+    def __init__(self, sink: Sink, server: str) -> None:
         self.sink = sink
         self.server = server
+
+    def _emit(self, row: dict) -> None:
+        """Best-effort : ne casse jamais l'appel de tool. Sink sync ou async."""
+        try:
+            res = self.sink(row)
+        except Exception:
+            return
+        if inspect.isawaitable(res):
+            task = asyncio.ensure_future(res)
+            _PENDING.add(task)
+            task.add_done_callback(_PENDING.discard)
 
     async def on_call_tool(self, context, call_next):
         ident = current_identity()
@@ -57,8 +77,8 @@ class AccessLogger(Middleware):
             result = await call_next(context)
         except Exception as e:
             row.update(ok=False, error=str(e)[:MAX_ARG_CHARS], duration_ms=int((time.monotonic() - t0) * 1000))
-            self.sink(row)
+            self._emit(row)
             raise
         row.update(ok=True, error=None, duration_ms=int((time.monotonic() - t0) * 1000))
-        self.sink(row)
+        self._emit(row)
         return result
