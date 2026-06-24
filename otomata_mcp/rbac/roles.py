@@ -1,7 +1,7 @@
 """Hiérarchie de rôles INTRA-entreprise.
 
 Le cross-Z (`platform_admin`, super-admin de toutes les orgs) est HORS socle : c'est
-l'orchestrateur (oto/madeleine) qui le porte.
+l'orchestrateur qui le porte.
 """
 from __future__ import annotations
 

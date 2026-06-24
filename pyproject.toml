@@ -1,6 +1,6 @@
 [project]
 name = "otomata-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "Socle commun des serveurs MCP Otomata : doctrines en base servies en tools, runs start/stop, RBAC scopé, logging. Tout-en-tools, scope injecté (intra-entreprise ; le × Z reste à l'orchestrateur)."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -8,7 +8,6 @@ license = { text = "Proprietary" }
 authors = [{ name = "Otomata", email = "alexis@otomata.tech" }]
 keywords = ["mcp", "fastmcp", "doctrine", "rbac", "multi-tenant"]
 classifiers = [
-    "Private :: Do Not Upload",
     "Programming Language :: Python :: 3",
     "Framework :: AsyncIO",
 ]

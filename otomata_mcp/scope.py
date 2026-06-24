@@ -1,6 +1,6 @@
 """Scope (tenant) : le socle exige un scope à CHAQUE opération.
 
-L'orchestrateur (oto/madeleine) résout l'entreprise courante et l'injecte ; OGIC (Z=1)
+L'orchestrateur résout l'entreprise courante et l'injecte ; un consommateur mono-tenant (Z=1)
 utilise un scope constant. Le socle ne requête JAMAIS sans scope → pas de fuite cross-org.
 """
 from __future__ import annotations
@@ -17,7 +17,7 @@ class ScopeResolver(Protocol):
 
 
 class ConstantScope:
-    """Z=1 : un seul tenant (cas OGIC)."""
+    """Z=1 : un seul tenant (consommateur mono-entreprise)."""
 
     def __init__(self, scope: Scope) -> None:
         self._scope = scope

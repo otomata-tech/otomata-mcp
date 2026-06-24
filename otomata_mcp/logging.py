@@ -1,7 +1,6 @@
 """Middleware de journalisation des appels de tools, corrélé au run actif.
 
-Réf oto `server.py:199-225` : c'est ce middleware (et non `otomata-calllog` brut) qui
-stampe `run_id`. Il réutilise le MÊME schéma/sink que calllog (`server, sub, email, tool,
+Ce middleware stampe le `run_id` du run actif sur chaque appel. Il réutilise le MÊME schéma/sink que calllog (`server, sub, email, tool,
 args, ok, error, duration_ms` + `run_id`). Comme tout est un tool, TOUT accès est loggé.
 
 Le sink peut être SYNC (ex. sqlite) ou ASYNC (ex. PostgREST httpx) : une coroutine est

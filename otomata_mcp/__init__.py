@@ -1,7 +1,7 @@
 """otomata-mcp — socle commun des serveurs MCP Otomata (intra-entreprise, scope injecté).
 
 Modules : content (doctrines en base → tools), run (start/stop), rbac, auth, logging.
-Tout-en-tools. Le multi-entreprise (× Z) reste dans l'orchestrateur (oto/madeleine).
+Tout-en-tools. Le multi-entreprise (× Z) reste dans l'orchestrateur.
 """
 from .bootstrap import build_server
 from .content import ContentDoc, ContentStore, InMemoryContentStore, SCHEMA_SQL, validate

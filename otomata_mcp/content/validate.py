@@ -1,6 +1,6 @@
 """Validation à l'écriture d'une doctrine.
 
-Garde-fou central de l'incident OGIC : **zéro nom de personne/client**. Ici, deux
+Garde-fou : **zéro nom de personne/client** dans le contenu. Ici, deux
 mécanismes complémentaires :
   - `blocklist` : termes interdits (noms connus) — déterministe, fourni par le consommateur.
   - `forbid_attribution` : heuristique sur les citations attribuées (« … » — Nom / (Nom)).

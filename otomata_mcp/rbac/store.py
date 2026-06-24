@@ -1,7 +1,7 @@
 """Contrat de persistance des rôles (scopé). Le consommateur l'implémente.
 
-OGIC : lit `app_metadata.ogic_role` du JWT (org_admin=admin, member=member), Z=1.
-oto/madeleine : lit `org_members.role` filtré par scope.
+Mono-tenant : lit un rôle dans le JWT (ex. un champ `*_role` → org_admin/member), Z=1.
+Multi-tenant : lit le rôle en base, filtré par scope.
 """
 from __future__ import annotations
 

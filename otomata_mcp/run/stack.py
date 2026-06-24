@@ -1,6 +1,6 @@
 """Cadre start/stop : pile de runs dans l'état de session FastMCP (zéro table).
 
-Réf oto `doctrine_run.py`. Le run actif est corrélé aux appels de tools par le logger
+Le run actif est corrélé aux appels de tools par le logger
 (`run_id`). Imbrication supportée (pile). Outcomes : done|abandoned|failed|blocked.
 """
 from __future__ import annotations

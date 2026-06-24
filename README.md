@@ -51,6 +51,5 @@ python example_demo.py
 
 ## Distribution
 
-Privé (classifier `Private :: Do Not Upload`). Consommé en dépendance **git** :
-`otomata-mcp @ git+ssh://git@github.com/otomata-tech/otomata-mcp.git`. Publication PyPI possible
-plus tard (modèle `otomata-calllog`) si on décide de l'ouvrir.
+Publié sur **PyPI** (`pip install otomata-mcp`), modèle `otomata-calllog`. Le contenu est du
+plumbing MCP générique — aucun secret ni donnée client.

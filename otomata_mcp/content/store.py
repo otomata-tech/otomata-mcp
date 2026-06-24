@@ -1,5 +1,5 @@
 """Contrat de persistance des doctrines (scopé). Le consommateur l'implémente
-(OGIC : PostgREST/Supabase ; oto/madeleine : asyncpg). InMemory fourni pour tests/démo.
+(ex. PostgREST/Supabase, ou asyncpg). InMemory fourni pour tests/démo.
 """
 from __future__ import annotations
 
