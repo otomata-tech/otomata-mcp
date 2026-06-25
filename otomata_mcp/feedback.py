@@ -11,16 +11,24 @@ la row ; il peut être SYNC ou ASYNC. Modèle aligné oto (`usage_signals`).
 from __future__ import annotations
 
 import inspect
-from typing import Awaitable, Callable, Optional, Union
+from typing import Awaitable, Callable, Optional, Protocol, Union
 
 from fastmcp import Context
 
 from .identity import current_identity
+from .rbac.gate import Rbac
+from .rbac.roles import ORG_ADMIN
 from .run import stack as run_stack
 
 SIGNALS = ("tool_feedback", "gap")
 
 FeedbackSink = Callable[[dict], Union[None, Awaitable[None]]]
+
+
+class FeedbackStore(Protocol):
+    """Côté lecture de la boucle : sert le digest des signaux remontés (admin)."""
+
+    def recent(self, server: str, limit: int) -> list[dict]: ...
 
 FEEDBACK_SCHEMA_SQL = """\
 CREATE TABLE IF NOT EXISTS tool_feedback (
@@ -40,7 +48,15 @@ CREATE INDEX IF NOT EXISTS tool_feedback_signal_idx ON tool_feedback (signal, cr
 """
 
 
-def register_feedback_tools(mcp, sink: FeedbackSink, *, server: str) -> None:
+def register_feedback_tools(
+    mcp,
+    sink: FeedbackSink,
+    *,
+    server: str,
+    store: Optional[FeedbackStore] = None,
+    rbac: Optional[Rbac] = None,
+    admin_role: str = ORG_ADMIN,
+) -> None:
     async def feedback(signal: str, kind: str, target: str,
                        text: Optional[str] = None, ctx: Context = None) -> dict:
         """Remonte un signal d'usage — la boucle d'apprentissage du produit. Préfère
@@ -73,3 +89,13 @@ def register_feedback_tools(mcp, sink: FeedbackSink, *, server: str) -> None:
         return {"ok": True, "signal": signal, "target": target}
 
     mcp.tool(name="feedback")(feedback)
+
+    if store is not None:
+        async def list_feedback(limit: int = 50) -> list[dict]:
+            """Digest des signaux d'usage remontés (gap / tool_feedback). Réservé admin :
+            c'est la lecture de la boucle de capitalisation côté gestionnaire du serveur."""
+            if rbac is not None:
+                rbac.require(admin_role)
+            return store.recent(server, max(1, min(limit, 500)))
+
+        mcp.tool(name="list_feedback")(list_feedback)

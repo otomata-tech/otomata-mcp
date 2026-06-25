@@ -16,8 +16,11 @@ otomata_mcp/
   identity.py     # current_identity() via resolver injecté (JWT en prod)
   content/        # instructions en base, servies EN TOOLS (readme_agent / list_instructions / get_instruction / set_instruction)
                   #   model · store (Protocol + InMemory) · validate (zéro nom) · schema (DDL) · tools
+  memory/         # mémoire partagée versionnée, EN TOOLS (memory_list / memory_read / memory_write)
+                  #   model · store (Protocol + InMemory) · schema (DDL) · tools ; write gated (write_role, défaut member)
   run/            # start/stop : pile de runs en session state, corrélée run_id
   rbac/           # org_admin → group_admin → member, scopé (gate des tools)
+  feedback.py     # boucle d'apprentissage : feedback(gap|tool_feedback) en écriture + list_feedback (digest admin)
   logging.py      # middleware run-aware (réutilise le schéma otomata-calllog + run_id)
   bootstrap.py    # build_server(...) compose tout
 ```
@@ -28,7 +31,10 @@ otomata_mcp/
 - un **`RoleStore`** (rôles scopés) ;
 - un **`ScopeResolver`** (`ConstantScope("ogic")` en Z=1, `CallableScope(current_org)` en Z=N) ;
 - un **sink de logs** (table `tool_calls`, cf. `otomata-calllog`) ;
-- l'**auth** (verifier JWT du provider) — le socle lit l'identité via un resolver injecté.
+- *(optionnel)* un **`MemoryStore`** pour la mémoire partagée (`MEMORY_SCHEMA_SQL` fourni) ;
+- *(optionnel)* un **`feedback_sink`** + un **`FeedbackStore`** (digest admin `list_feedback`) — `FEEDBACK_SCHEMA_SQL` fourni ;
+- l'**auth** (verifier JWT du provider) — le socle lit l'identité via un resolver injecté. **Un provider self-hosté
+  (ex. OAuth 2.1 embarqué de 321agents) se passe simplement en `auth=` ; le socle reste agnostique.**
 
 ## Exemple
 
@@ -38,7 +44,7 @@ mcp = build_server("mon-mcp", content_store=..., role_store=..., scope_resolver=
                    sink=my_sink, blocklist=["NomInterdit"])
 ```
 
-`example_demo.py` montre tout (doctrines-tools loggées + corrélées run_id, RBAC, validation).
+`example_demo.py` montre tout (doctrines + mémoire en tools loggées + corrélées run_id, RBAC, validation, digest admin).
 
 ## Dev
 
