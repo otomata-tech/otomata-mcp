@@ -23,7 +23,8 @@ otomata_mcp/
   acl/            # GRANTS par utilisateur : tool:<name> | doctrine:<name> | admin — middleware (gate + masquage) + tools (grant/revoke/list_grants)
   feedback.py     # boucle d'apprentissage : feedback(gap|tool_feedback) en écriture + list_feedback (digest admin)
   logging.py      # middleware run-aware (schéma otomata-calllog + run_id)
-  adapters/pg.py  # ADAPTATEUR Postgres asyncpg prêt à l'emploi : tous les stores + sinks + init_schema (extra [pg])
+  adapters/pg.py        # ADAPTATEUR Postgres asyncpg : tous les stores + sinks + init_schema (extra [pg])
+  adapters/postgrest.py # ADAPTATEUR PostgREST/Supabase (httpx) : mêmes stores via l'API REST (extra [postgrest], cible OGIC)
   bootstrap.py    # build_server(...) compose tout
 ```
 
@@ -58,6 +59,10 @@ de grants ; l'accès réel = l'ensemble exact des grants. Activer l'ACL : passer
 >                    feedback_sink=make_pg_feedback_sink(pool), feedback_store=PgFeedbackStore(pool),
 >                    acl_public_tools=["readme_agent"])
 > ```
+> Variante **PostgREST/Supabase** (même contrat, persistance via l'API REST — cible OGIC) :
+> `from otomata_mcp.adapters.postgrest import PostgrestClient, PostgrestContentStore, …` avec
+> `client = PostgrestClient(base_url, apikey=…)`. Le schéma reste les `*_SCHEMA_SQL` du socle
+> appliqués à la base sous-jacente (PostgREST n'exécute pas de DDL).
 
 ## Exemple
 
