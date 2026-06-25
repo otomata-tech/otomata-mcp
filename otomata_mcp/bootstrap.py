@@ -9,6 +9,9 @@ from typing import Callable, Optional, Sequence, Union
 
 from fastmcp import FastMCP
 
+from .acl.middleware import AclMiddleware
+from .acl.store import GrantStore
+from .acl.tools import register_acl_tools
 from .content.store import ContentStore
 from .content.tools import register_content_tools
 from .feedback import FeedbackSink, FeedbackStore, register_feedback_tools
@@ -39,13 +42,18 @@ def build_server(
     feedback_store: Optional[FeedbackStore] = None,
     memory_store: Optional[MemoryStore] = None,
     memory_write_role: str = MEMBER,
+    grant_store: Optional[GrantStore] = None,
+    acl_public_tools: Sequence[str] = (),
     auth=None,
 ) -> FastMCP:
     # La porte d'entrée : instructions métier (optionnelles) + la convention du socle.
     full_instructions = "\n\n".join(filter(None, [instructions, SERVER_INSTRUCTIONS]))
     mcp = FastMCP(name, instructions=full_instructions, auth=auth)
     rbac = Rbac(role_store, scope_resolver)
+    # AccessLogger en premier (outermost) → même un appel refusé par l'ACL est tracé.
     mcp.add_middleware(AccessLogger(sink, server=name))
+    if grant_store is not None:
+        mcp.add_middleware(AclMiddleware(grant_store, scope_resolver, public_tools=acl_public_tools))
     register_content_tools(mcp, content_store, scope_resolver, rbac, readme=readme, blocklist=blocklist)
     register_run_tools(mcp)
     if memory_store is not None:
@@ -54,4 +62,6 @@ def build_server(
         register_feedback_tools(
             mcp, feedback_sink, server=name, store=feedback_store, rbac=rbac
         )
+    if grant_store is not None:
+        register_acl_tools(mcp, grant_store, scope_resolver)
     return mcp

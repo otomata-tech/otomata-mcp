@@ -5,6 +5,7 @@ Versionnée (un write = une nouvelle version), scopée par tenant. La lecture es
 La connaissance vivante de l'équipe vit ici — la doctrine (`content/`) reste, elle, courte et stable."""
 from __future__ import annotations
 
+from .._util import maybe_await
 from ..identity import current_sub
 from ..rbac.gate import Rbac
 from ..rbac.roles import MEMBER
@@ -25,6 +26,7 @@ def register_memory_tools(
 
     async def memory_list() -> list[dict]:
         """Liste les clés de la mémoire partagée (dernière version, auteur, date)."""
+        entries = await maybe_await(store.list(_scope()))
         return [
             {
                 "key": e.key,
@@ -32,12 +34,12 @@ def register_memory_tools(
                 "author": e.author,
                 "updated_at": e.updated_at.isoformat() if e.updated_at else None,
             }
-            for e in store.list(_scope())
+            for e in entries
         ]
 
     async def memory_read(key: str) -> dict:
         """Renvoie la dernière version d'une clé de mémoire."""
-        e = store.latest(_scope(), key)
+        e = await maybe_await(store.latest(_scope(), key))
         if e is None:
             raise ValueError(f"clé de mémoire inconnue : {key!r}")
         return {"key": e.key, "version": e.version, "content": e.content, "author": e.author}
@@ -47,8 +49,8 @@ def register_memory_tools(
         relis `memory_read(key)` pour repartir de la dernière version et écris autoportant."""
         if not key.strip() or not content.strip():
             raise ValueError("`key` et `content` ne peuvent pas être vides.")
-        rbac.require(write_role)
-        e = store.put(_scope(), key.strip(), content, author=current_sub())
+        await rbac.require_async(write_role)
+        e = await maybe_await(store.put(_scope(), key.strip(), content, author=current_sub()))
         return {"key": e.key, "version": e.version}
 
     mcp.tool(name="memory_list")(memory_list)

@@ -1,7 +1,7 @@
 [project]
 name = "otomata-mcp"
-version = "0.4.0"
-description = "Socle commun des serveurs MCP Otomata : doctrines en base servies en tools, mémoire partagée versionnée, runs start/stop, RBAC scopé, capitalisation (feedback), logging. Tout-en-tools, scope injecté (intra-entreprise ; le × Z reste à l'orchestrateur)."
+version = "0.5.0"
+description = "Socle commun des serveurs MCP Otomata : doctrines en base servies en tools, mémoire partagée versionnée, RBAC + ACL (grants par utilisateur), runs start/stop, capitalisation (feedback), logging, adaptateur Postgres prêt à l'emploi. Tout-en-tools, scope injecté (intra-entreprise ; le × Z reste à l'orchestrateur)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Proprietary" }
@@ -14,7 +14,8 @@ classifiers = [
 dependencies = ["fastmcp>=2.0"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+pg = ["asyncpg>=0.29"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "asyncpg>=0.29"]
 
 [project.urls]
 Homepage = "https://github.com/otomata-tech/otomata-mcp"

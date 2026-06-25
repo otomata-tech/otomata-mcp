@@ -15,6 +15,7 @@ from typing import Awaitable, Callable, Optional, Protocol, Union
 
 from fastmcp import Context
 
+from ._util import maybe_await
 from .identity import current_identity
 from .rbac.gate import Rbac
 from .rbac.roles import ORG_ADMIN
@@ -95,7 +96,7 @@ def register_feedback_tools(
             """Digest des signaux d'usage remontés (gap / tool_feedback). Réservé admin :
             c'est la lecture de la boucle de capitalisation côté gestionnaire du serveur."""
             if rbac is not None:
-                rbac.require(admin_role)
-            return store.recent(server, max(1, min(limit, 500)))
+                await rbac.require_async(admin_role)
+            return await maybe_await(store.recent(server, max(1, min(limit, 500))))
 
         mcp.tool(name="list_feedback")(list_feedback)

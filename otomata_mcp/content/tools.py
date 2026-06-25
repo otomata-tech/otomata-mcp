@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Callable, Optional, Sequence, Union
 
+from .._util import maybe_await
 from ..identity import current_sub
 from ..rbac.gate import Rbac
 from ..rbac.roles import ORG_ADMIN
@@ -34,42 +35,39 @@ def register_content_tools(
     def _scope():
         return scope_resolver.resolve()
 
-    def _index() -> list[dict]:
+    async def _index(kind: Optional[str] = None) -> list[dict]:
+        docs = await maybe_await(store.list(_scope(), kind))
         return [
             {"kind": d.kind, "slug": d.slug, "title": d.title,
              "description": d.description, "version": d.version}
-            for d in store.list(_scope(), None)
+            for d in docs
         ]
 
     async def readme_agent() -> dict:
         """À LIRE EN PREMIER. Renvoie la doctrine de base (contrat + conventions) ET
         l'index des instructions disponibles (à charger ensuite via get_instruction)."""
         base = readme() if callable(readme) else readme
-        return {"scope": _scope(), "readme": base or "", "instructions": _index()}
+        return {"scope": _scope(), "readme": base or "", "instructions": await _index()}
 
     async def list_instructions(kind: Optional[str] = None) -> list[dict]:
         """L'index des instructions disponibles (sans le corps), filtrable par kind."""
-        return [
-            {"kind": d.kind, "slug": d.slug, "title": d.title,
-             "description": d.description, "version": d.version}
-            for d in store.list(_scope(), kind)
-        ]
+        return await _index(kind)
 
     async def get_instruction(kind: str, slug: str) -> dict:
         """Sert le corps d'une instruction (knowledge/rule/…)."""
-        d = store.latest(_scope(), kind, slug)
+        d = await maybe_await(store.latest(_scope(), kind, slug))
         if d is None:
             raise ValueError(f"instruction introuvable : {kind}/{slug}")
         return {"kind": d.kind, "slug": d.slug, "title": d.title, "version": d.version, "body": d.body}
 
     async def set_instruction(kind: str, slug: str, body: str, title: str = "", description: str = "") -> dict:
         """Crée/édite une instruction (réservé org_admin). Refuse tout nom de personne/client."""
-        rbac.require(ORG_ADMIN)
+        await rbac.require_async(ORG_ADMIN)
         errors = validate(body, blocklist=blocklist, forbid_attribution=forbid_attribution)
         if errors:
             raise ValueError("écriture refusée : " + " ; ".join(errors))
         doc = ContentDoc(scope=_scope(), kind=kind, slug=slug, body=body, title=title, description=description)
-        saved = store.put(doc, set_by=current_sub())
+        saved = await maybe_await(store.put(doc, set_by=current_sub()))
         return {"kind": saved.kind, "slug": saved.slug, "version": saved.version}
 
     mcp.tool(name="readme_agent")(readme_agent)

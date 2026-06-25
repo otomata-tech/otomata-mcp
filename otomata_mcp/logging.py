@@ -22,6 +22,24 @@ MAX_ARG_CHARS = 300
 
 Sink = Callable[[dict], Union[None, Awaitable[None]]]
 
+# DDL du journal d'appels (modèle otomata-calllog). À appliquer par le consommateur.
+CALLLOG_SCHEMA_SQL = """\
+CREATE TABLE IF NOT EXISTS tool_calls (
+    id          BIGSERIAL PRIMARY KEY,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    server      TEXT NOT NULL,
+    tool        TEXT NOT NULL,
+    args        JSONB,
+    sub         TEXT,
+    email       TEXT,
+    run_id      TEXT,
+    ok          BOOLEAN,
+    error       TEXT,
+    duration_ms INTEGER
+);
+CREATE INDEX IF NOT EXISTS tool_calls_server_time ON tool_calls (server, created_at DESC);
+"""
+
 _PENDING: set = set()
 
 
