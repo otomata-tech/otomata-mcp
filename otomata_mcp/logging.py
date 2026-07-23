@@ -1,7 +1,11 @@
 """Middleware de journalisation des appels de tools, corrélé au run actif.
 
-Ce middleware stampe le `run_id` du run actif sur chaque appel. Il réutilise le MÊME schéma/sink que calllog (`server, sub, email, tool,
-args, ok, error, duration_ms` + `run_id`). Comme tout est un tool, TOUT accès est loggé.
+Ce middleware stampe le `run_id` du run actif sur chaque appel. **Domicile
+canonique du contrat calllog** (schéma de ligne `server, sub, email, tool, args,
+ok, error, duration_ms` + `run_id` — dashboards comparables entre serveurs MCP) :
+l'ex-lib `otomata-calllog` est décommissionnée (otomata-calllog#1, 2026-07-23 ;
+oto-backend a inliné son middleware et étend le schéma en local). Comme tout est
+un tool, TOUT accès est loggé.
 
 Le sink peut être SYNC (ex. sqlite) ou ASYNC (ex. PostgREST httpx) : une coroutine est
 programmée en fire-and-forget avec une référence forte (anti-GC asyncio).
