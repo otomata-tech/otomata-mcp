@@ -4,7 +4,7 @@ version = "0.6.0"
 description = "Socle commun des serveurs MCP Otomata : doctrines en base servies en tools, mémoire partagée versionnée, RBAC + ACL (grants par utilisateur), runs start/stop, capitalisation (feedback), logging, adaptateurs Postgres (asyncpg) et PostgREST/Supabase prêts à l'emploi. Tout-en-tools, scope injecté (intra-entreprise ; le × Z reste à l'orchestrateur)."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Proprietary" }
+license = "MIT"
 authors = [{ name = "Otomata", email = "alexis@otomata.tech" }]
 keywords = ["mcp", "fastmcp", "doctrine", "rbac", "multi-tenant"]
 classifiers = [
