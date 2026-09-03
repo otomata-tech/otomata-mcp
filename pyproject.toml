@@ -11,7 +11,21 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Framework :: AsyncIO",
 ]
-dependencies = ["fastmcp>=2.0"]
+# ⚠️ La fenêtre où le socle FONCTIONNE, mesurée le 2026-09-03 sur `main` :
+#   fastmcp 2.14.7 → collecte des tests cassée (pydantic : NameError 'Optional')
+#   fastmcp 3.4.7  → vert
+#   fastmcp 4.0.2  → test_socle ROUGE — le `run_id` n'est plus corrélé : le
+#                    contexte de run ne traverse plus l'appel d'outil
+#
+# `>=2.0` mentait AUX DEUX BOUTS. La borne basse autorisait une installation qui
+# ne collecte pas ; la borne haute manquait, et c'est la plus coûteuse — sur 4.x
+# les appels d'outil ABOUTISSENT, seule la corrélation de run disparaît. Un défaut
+# qui ne se signale pas : le service répond, et l'observabilité s'en va.
+#
+# ⚠️ Avant de relever la borne haute un jour, vérifier que la corrélation est
+# rétablie PAR UNE MESURE, jamais par la lecture d'un journal des changements —
+# un appel qui réussit sans son `run_id` ressemble exactement à un appel sain.
+dependencies = ["fastmcp>=3,<4"]
 
 [project.optional-dependencies]
 pg = ["asyncpg>=0.29"]
