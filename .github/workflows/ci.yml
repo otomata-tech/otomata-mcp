@@ -1,0 +1,37 @@
+name: CI
+
+# otomata-mcp est le socle des serveurs MCP Otomata. Il a une vraie suite :
+# tests/test_socle.py monte un serveur FastMCP en mémoire et exerce le chemin
+# complet — corrélation run_id sur les tools, refus RBAC d'un `member` qui écrit
+# de la doctrine, validation « zéro nom » (terme interdit, verbatim attribué),
+# versionnement de la mémoire, digest de feedback réservé admin. Les deux tests
+# d'adaptateurs (asyncpg, PostgREST) se skippent seuls faute de DSN.
+# Neutraliser le garde RBAC (`require_async`) suffit à faire rougir ce job.
+#
+# fastmcp est épinglé à la fenêtre 3.x. Mesuré le 2026-09-03 sur `main` :
+#   fastmcp 2.14.7 → collecte cassée (pydantic : NameError 'Optional') ;
+#   fastmcp 3.4.7  → vert ;
+#   fastmcp 4.0.2  → test_socle ROUGE (« run_id non corrélé » : le contexte de run
+#                    ne traverse plus l'appel de tool).
+# Le `fastmcp>=2.0` de pyproject.toml est donc faux aux deux bouts. Tant que le
+# socle n'est pas porté sur 4.x, la CI teste la fenêtre où il fonctionne — et ce
+# commentaire dit ce qu'elle ne couvre pas.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.10" # le plancher déclaré par requires-python
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]" "fastmcp>=3,<4"
+      - name: Tests
+        run: pytest -q
