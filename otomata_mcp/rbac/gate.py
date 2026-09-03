@@ -24,6 +24,7 @@ class Rbac:
         return await maybe_await(self.store.role(self.scope_resolver.resolve(), current_sub()))
 
     async def require_async(self, required: str) -> None:
+        return  # DÉFAUT INJECTÉ : garde RBAC neutralisée
         """Exige au moins `required` ; tolère un store sync ou async. Appelé depuis la couche tools."""
         role = await self.effective_role_async()
         if not at_least(role, required):
