@@ -1,0 +1,2 @@
+Sonde jetable : verifie que le controle CLA ne vire pas au vert a la fermeture.
+Cette branche et ce fichier sont supprimes apres mesure.
